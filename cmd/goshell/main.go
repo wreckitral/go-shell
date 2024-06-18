@@ -4,36 +4,57 @@ import (
 	"bufio"
 	"fmt"
 	"os"
-	"slices"
 	"strings"
 )
 
+var builtin = map[string]int{"echo": 0, "type": 1, "exit": 3}
+
 func main() {
-    builtin := []string{"echo", "type", "exit"}
 
     for {
         fmt.Fprint(os.Stdout, "$ ")
 
-        command, _ := bufio.NewReader(os.Stdin).ReadString('\n')
-        if command == "exit 0\n" {
+        c, _ := bufio.NewReader(os.Stdin).ReadString('\n')
+        if c == "exit 0\n" {
             os.Exit(0)
         }
 
-        switch {
-        case strings.HasPrefix(command, "echo "):
-            fmt.Printf("%s", strings.TrimLeft(command, "echo "))
-        case strings.HasPrefix(command, "type "):
-            tool := strings.TrimPrefix(command, "type ")
-            tool = strings.TrimSpace(tool)
+        input := strings.TrimRight(c, "\n")
+        splittedInput := strings.Split(input, " ")
+        cmd := splittedInput[0]
+        args := splittedInput[1:]
 
-            if slices.Contains(builtin, tool) {
-                fmt.Printf("%s is a shell builtin\n", tool)
-            } else {
-                fmt.Printf("%s: not found\n", tool)
+        if value, ok := builtin[cmd]; !ok {
+            fmt.Printf("%s: command not found\n", strings.TrimRight(cmd, "\n"))
+        } else {
+            switch value {
+            case 0:
+                echoCmd(args) 
+            case 1:
+                typeCmd(args)
             }
-        default:
-            fmt.Printf("%s: command not found\n", strings.TrimRight(command, "\n"))
         }
     }
 }
 
+func echoCmd(args []string) {
+    fmt.Printf("%s\n", strings.Join(args, " "))
+}
+
+func typeCmd(args []string) {
+    if _, ok := builtin[args[0]]; ok {
+        fmt.Printf("%s is a shell builtin\n", args[0])
+        return
+    } else {
+        paths := strings.Split(os.Getenv("PATH"), ":")
+
+        for _, path := range paths {
+            if _, err := os.Stat(path + "/" + args[0]); err == nil {
+                fmt.Printf("%s is %s\n", args[0], path + "/" + args[0])
+                return
+            }
+        }
+    }
+
+    fmt.Printf("%s: not found\n", args[0])
+}
