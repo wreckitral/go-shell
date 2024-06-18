@@ -4,6 +4,7 @@ import (
 	"bufio"
 	"fmt"
 	"os"
+	"os/exec"
 	"strings"
 )
 
@@ -25,7 +26,7 @@ func main() {
         args := splittedInput[1:]
 
         if value, ok := builtin[cmd]; !ok {
-            fmt.Printf("%s: command not found\n", strings.TrimRight(cmd, "\n"))
+            cliApp(cmd, args)
         } else {
             switch value {
             case 0:
@@ -33,6 +34,7 @@ func main() {
             case 1:
                 typeCmd(args)
             }
+
         }
     }
 }
@@ -57,4 +59,16 @@ func typeCmd(args []string) {
     }
 
     fmt.Printf("%s: not found\n", args[0])
+}
+
+func cliApp(cmd string, args []string) {
+    command := exec.Command(cmd, args...)
+    command.Stderr = os.Stderr
+    command.Stdout = os.Stdout
+
+    if err := command.Run(); err != nil {
+        fmt.Printf("%s: command not found\n", cmd)
+        return
+    }
+
 }
