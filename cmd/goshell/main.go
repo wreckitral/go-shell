@@ -8,7 +8,7 @@ import (
 	"strings"
 )
 
-var builtin = map[string]int{"echo": 0, "type": 1, "pwd": 2, "exit": 3}
+var builtin = map[string]int{"echo": 0, "type": 1, "pwd": 2, "cd":3, "exit": 4}
 
 func main() {
 
@@ -35,6 +35,8 @@ func main() {
                 typeCmd(args)
             case 2:
                 pwdCmd()
+            case 3:
+                cdCmd(args)
             }
 
 
@@ -72,6 +74,16 @@ func pwdCmd() {
     }
 
     fmt.Printf("%s\n", pwd)
+}
+
+func cdCmd(args []string) {
+    if args[0] == "~" {
+        args[0] = os.Getenv("HOME")
+    }
+
+    if err := os.Chdir(args[0]); err != nil {
+        fmt.Printf("cd: %s: No such file or directory\n", args[0])
+    }
 }
 
 func cliApp(cmd string, args []string) {
