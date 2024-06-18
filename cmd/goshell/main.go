@@ -38,8 +38,6 @@ func main() {
             case 3:
                 cdCmd(args)
             }
-
-
         }
     }
 }
@@ -49,6 +47,11 @@ func echoCmd(args []string) {
 }
 
 func typeCmd(args []string) {
+    if len(args) <= 0 {
+        fmt.Printf("type command need an argument\n")
+        return
+    }
+    
     if _, ok := builtin[args[0]]; ok {
         fmt.Printf("%s is a shell builtin\n", args[0])
         return
@@ -95,5 +98,4 @@ func cliApp(cmd string, args []string) {
         fmt.Printf("%s: command not found\n", cmd)
         return
     }
-
 }
